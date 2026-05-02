@@ -2,38 +2,38 @@
 
 This document defines the normalized result model returned by the wrapper layer.
 
-The purpose of the result schema is not to expose every detail of Playwright internals. Its purpose is to return a compact, review-friendly execution record that another system can consume reliably and a human can inspect quickly.
+The purpose of this schema is not to mirror every Playwright internal detail. Its purpose is to provide a compact, review-friendly execution record that another system can consume reliably and a human can inspect quickly.
 
 ## Why this schema exists
 
-Raw process output is rarely a good interface.
+Raw process output is not a strong contract.
 
-Terminal logs, runner output, and scattered artifacts may be sufficient for debugging, but they are not a strong contract for governed execution.
+Terminal logs, runner output, and scattered artifacts may be useful for debugging, but they are a weak interface for governed execution. They make it harder to distinguish policy failures from execution failures, harder to confirm what was actually run, and harder to guide human review.
 
-This schema exists to solve a different problem:
+This schema exists to provide a narrower and more useful model:
 
-- make wrapper outcomes easy to interpret
-- distinguish operational failures from test failures
-- preserve the requested target alongside the executed command
+- preserve the approved target in structured form
+- distinguish wrapper-level failures from test-run outcomes
+- expose the constructed command for review
 - surface artifact references as first-class evidence
-- support human review without requiring shell reconstruction
+- provide enough summary context for a reviewer to know where to look next
 
-The result model is therefore part of the execution boundary, not just a convenience after the fact.
+The result model is part of the execution boundary, not just a convenience after the fact.
 
 ## Design goals
 
 The first version of the result schema is designed to do a few things well:
 
 - communicate whether the wrapper completed its own job
-- normalize execution status into a small readable set
+- normalize outcome status into a small readable set
 - echo the approved target in structured form
 - expose the constructed command for review
 - include artifact references in a stable location
-- provide a short summary that helps a reviewer know where to look next
+- provide a short summary that supports the next review step
 
 It is intentionally compact.
 
-## Example result
+## Canonical example
 
 ```json
 {
@@ -75,6 +75,30 @@ The first-version result shape is expected to contain:
 
 Each field exists to answer a different review question.
 
+## Core semantic model
+
+The result schema deliberately separates three questions:
+
+### 1. Request validity
+
+Was the request accepted under wrapper policy?
+
+This is primarily reflected by `ok` and `status`.
+
+### 2. Execution completion
+
+Did the wrapper successfully construct and attempt the Playwright run, and did the process complete in a normal way?
+
+This is reflected by `ok`, `status`, and `exitCode`.
+
+### 3. Test outcome
+
+Did the selected Playwright target pass or fail?
+
+This is reflected by `status`.
+
+These questions are related, but they are not the same. The schema is stronger because it does not collapse them into one vague success flag.
+
 ## Field definitions
 
 ### `ok`
@@ -83,23 +107,40 @@ Type: boolean
 
 This field answers the wrapper-level question:
 
-**Did the wrapper complete its own responsibility successfully?**
+**Did the wrapper complete its operational responsibility successfully?**
 
-This is not identical to test success.
+That responsibility includes:
 
-Examples:
+- validating the request
+- constructing the approved invocation
+- attempting execution when validation passes
+- returning a normalized result
 
-- a valid Playwright run with failing tests can still return `ok: true`
-- an input validation failure should return `ok: false`
-- a process launch failure should return `ok: false`
+`ok` is therefore about wrapper behavior, not just test outcome.
 
-This distinction is important because the wrapper is responsible for governed execution, not for forcing tests to pass.
+#### Required interpretation
+
+- `ok: true` means the wrapper accepted the request and completed its execution responsibility
+- `ok: false` means the wrapper did not complete that responsibility successfully
+
+#### Important consequence
+
+A failing Playwright test run can still return `ok: true`.
+
+That is expected when:
+
+- the request was valid
+- the run was launched successfully
+- Playwright completed normally
+- the selected tests failed
+
+A validation rejection or execution problem should return `ok: false`.
 
 ### `status`
 
 Type: string
 
-This field provides a normalized execution status.
+This field provides a normalized outcome classification.
 
 For v1, the allowed set should stay deliberately small:
 
@@ -108,14 +149,30 @@ For v1, the allowed set should stay deliberately small:
 - `validation_error`
 - `execution_error`
 
-These values should be interpreted as follows:
+#### Status meanings
 
-- `passed` means the wrapper executed successfully and the test run passed
-- `failed` means the wrapper executed successfully and the test run completed with failing tests
-- `validation_error` means the request was rejected before execution
+- `passed` means the wrapper completed successfully and the Playwright run completed with passing tests
+- `failed` means the wrapper completed successfully and the Playwright run completed with failing tests
+- `validation_error` means the wrapper rejected the request before execution
 - `execution_error` means the wrapper attempted execution but could not complete the run normally
 
-This field is designed for quick human scanning and simple downstream handling.
+#### Status and `ok` compatibility rules
+
+The following combinations should be treated as valid in v1:
+
+- `ok: true` with `status: passed`
+- `ok: true` with `status: failed`
+- `ok: false` with `status: validation_error`
+- `ok: false` with `status: execution_error`
+
+The following combinations should be treated as invalid or contradictory:
+
+- `ok: true` with `status: validation_error`
+- `ok: true` with `status: execution_error`
+- `ok: false` with `status: passed`
+- `ok: false` with `status: failed`
+
+This keeps the model simple and internally consistent.
 
 ### `target`
 
@@ -133,21 +190,24 @@ Expected v1 fields:
 - `headed`
 - `workers`
 
-This matters for review because the target is the approved request shape, while the command is the derived invocation.
+This matters because the target is the approved request shape, while the command is the derived invocation. Those should be related, but not conceptually merged.
 
-Those two should be related, but not conceptually merged.
+For rejected requests, the repository may later choose whether to include a partially normalized target or omit it. For v1, the stronger default is to include the normalized target when available and keep the shape predictable.
 
 ### `command`
 
-Type: string
+Type: string or null
 
 This field is a human-readable representation of the constructed Playwright invocation.
 
 It improves reviewability by making the execution shape visible without exposing raw caller-supplied shell text as part of the public interface.
 
-This field should reflect validated and normalized input only.
+#### Command rules
 
-The command is evidence of what the wrapper ran, not a pass-through execution request.
+- if validation passed and a command was constructed, `command` should be present
+- if validation failed before command construction, `command` should be `null`
+
+This field should always reflect validated and normalized input only.
 
 ### `exitCode`
 
@@ -155,14 +215,18 @@ Type: number or null
 
 This field captures the process exit code when execution occurred.
 
-For validation failures, this may be omitted or represented as `null` in v1.
+#### Exit code rules
 
-The main goal is to preserve clarity:
+- if the Playwright process was launched, `exitCode` should contain the observed process exit code
+- if execution never started, `exitCode` should be `null`
 
-- if execution happened, the exit code helps explain the outcome
-- if execution never started, the absence of an exit code should be understandable
+#### Required interpretation
 
-The schema should avoid implying process semantics where no process was launched.
+- `exitCode: 0` usually corresponds to a passing run
+- non-zero `exitCode` may correspond to failing tests or execution problems
+- `exitCode: null` means no process was launched
+
+The schema should not imply process semantics when execution never began.
 
 ### `artifacts`
 
@@ -181,7 +245,9 @@ Example fields:
 
 Artifact values should use repo-relative paths.
 
-This field exists because evidence is a first-class part of the review model, not an afterthought.
+This field exists because evidence is part of the review contract, not an incidental byproduct.
+
+For v1, the artifact object should still be present even when some referenced files do not exist yet. Stable shape is more useful than forcing downstream consumers to infer meaning from missing keys.
 
 ### `summary`
 
@@ -198,45 +264,18 @@ This is intentionally modest.
 
 The goal is not to create a verbose reporting layer. The goal is to make the result immediately useful to a reviewer who wants to know what happened and what to inspect next.
 
-## Outcome normalization model
+## Outcome matrix
 
-A strong result model should distinguish at least three different ideas:
+The intended v1 interpretation is:
 
-### 1. Request validity
+| `ok` | `status` | Meaning | Typical reviewer action |
+|---|---|---|---|
+| `true` | `passed` | Wrapper completed successfully and tests passed | Record success, inspect artifacts only if needed |
+| `true` | `failed` | Wrapper completed successfully and tests failed | Open HTML report, then inspect traces if needed |
+| `false` | `validation_error` | Request was rejected before execution | Fix request shape or caller behavior |
+| `false` | `execution_error` | Execution did not complete normally | Inspect environment, wrapper behavior, and available artifacts |
 
-Was the request accepted under wrapper policy?
-
-This is captured primarily through `ok` and `status`.
-
-### 2. Execution success
-
-Was the Playwright process launched and completed in a normal way?
-
-This is reflected through `ok`, `status`, and `exitCode`.
-
-### 3. Test outcome
-
-Did the selected Playwright target pass or fail?
-
-This is reflected through `status`.
-
-Those distinctions prevent the schema from collapsing everything into a vague success/failure flag.
-
-That is one of the main senior-level qualities of the model.
-
-## Review-oriented interpretation
-
-A reviewer looking at one result should be able to answer:
-
-- what was requested
-- whether the request was accepted
-- what the wrapper actually ran
-- whether the run completed normally
-- whether tests passed or failed
-- where the evidence lives
-- what they should inspect next
-
-If the schema supports those questions well, it is doing its job.
+This is enough for v1.
 
 ## Example interpretation scenarios
 
@@ -245,7 +284,8 @@ If the schema supports those questions well, it is doing its job.
 ```json
 {
   "ok": true,
-  "status": "passed"
+  "status": "passed",
+  "exitCode": 0
 }
 ```
 
@@ -253,22 +293,23 @@ Interpretation:
 
 - the wrapper accepted the request
 - execution completed
-- the tests passed
+- the selected target passed
 
 ### Failing test run
 
 ```json
 {
   "ok": true,
-  "status": "failed"
+  "status": "failed",
+  "exitCode": 1
 }
 ```
 
 Interpretation:
 
 - the wrapper did its job correctly
-- Playwright ran
-- the test target failed
+- Playwright ran and completed
+- the selected target failed
 
 This is not an execution-boundary failure.
 
@@ -277,13 +318,15 @@ This is not an execution-boundary failure.
 ```json
 {
   "ok": false,
-  "status": "validation_error"
+  "status": "validation_error",
+  "command": null,
+  "exitCode": null
 }
 ```
 
 Interpretation:
 
-- the wrapper rejected the request before attempting execution
+- the wrapper rejected the request before execution
 - the failure occurred at the trust boundary
 - this is a policy or input issue, not a test result
 
@@ -292,15 +335,46 @@ Interpretation:
 ```json
 {
   "ok": false,
-  "status": "execution_error"
+  "status": "execution_error",
+  "command": "npx playwright test --project smoke tests/smoke/example.spec.ts",
+  "exitCode": 1
 }
 ```
 
 Interpretation:
 
-- the wrapper accepted or partially accepted the request
-- execution could not complete normally
-- the problem is operational, not just a failing assertion
+- the wrapper accepted the request and attempted execution
+- the run did not complete normally
+- the problem is operational rather than a simple failing assertion
+
+## Error detail posture
+
+The v1 schema intentionally keeps top-level status small.
+
+Richer structured error detail may be added later, such as:
+
+- validation failure reason codes
+- field-level validation errors
+- execution failure classifications
+- stderr or debug references
+
+Those are reasonable extensions, but they are not required to prove the core pattern.
+
+The stronger v1 choice is to keep top-level semantics stable and understandable.
+
+## Review-oriented interpretation
+
+A reviewer looking at one result should be able to answer:
+
+- what was requested
+- whether the request was accepted
+- what the wrapper actually ran
+- whether execution completed normally
+- whether tests passed or failed
+- where the evidence lives
+- what should be inspected next
+
+If the schema supports those questions well, it is doing its job.
 
 ## Non-goals
 
@@ -324,6 +398,7 @@ Possible future additions might include:
 - timestamps
 - richer validation detail
 - structured error objects
+- artifact existence flags
 - artifact counts or classifications
 
 Those may be useful later, but they are not required to prove the core pattern.
