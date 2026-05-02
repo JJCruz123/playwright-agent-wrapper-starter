@@ -109,11 +109,20 @@ The wrapper should distinguish between:
 
 That distinction matters because a result may still include known artifact fields even when some artifacts were not produced.
 
-For example:
+For v1, the artifact presence rules should be explicit:
 
-- an HTML report path may be known even if the report was not generated yet
+- the `artifacts` object is always present
+- `htmlReport`, `testResultsJson`, and `testResultsXml` are `string | null`
+- `traceFiles` is always an array
+- missing scalar artifact files are represented by `null`
+- no artifact keys are omitted from the result shape
+
+Examples:
+
+- an HTML report path may be known and returned as a string when report output is expected
+- an HTML report value may be `null` when no report path is available
 - trace file arrays may be empty for runs that produced no traces
-- machine-readable result paths may be stable even when execution failed early
+- machine-readable result paths may still be present even when execution failed early enough that the files were not ultimately written
 
 This approach keeps the result shape stable for reviewers and downstream systems.
 

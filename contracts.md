@@ -135,6 +135,32 @@ The interfaces above are intentionally small, but they still rely on a few impor
 - for v1, the documented public sample allowlist is intentionally small
 - if more Playwright projects are introduced later, the union type should expand deliberately
 
+### `spec`
+
+- `spec` is optional in the request contract
+- when present, it must be repo-relative and remain inside `tests/`
+- absolute paths, parent traversal, and paths outside the approved test area are invalid
+
+### `grep`
+
+- `grep` is optional in the request contract
+- if present, it must be a non-empty string after trimming
+- `grep` must not exceed 200 characters
+- `grep` is passed as a discrete Playwright argument
+- `grep` is never treated as raw shell text
+
+### `headed`
+
+- `headed` is optional in the request contract
+- when normalized into the result target, omitted `headed` becomes `false`
+
+### `workers`
+
+- `workers` is optional in the request contract
+- if present, it must be an integer in the inclusive v1 range of `1` to `4`
+- `0`, negative numbers, non-integers, and values above `4` are invalid
+- when omitted, normalized `workers` becomes `null`
+
 ### `ok` and `status`
 
 Valid combinations for v1 are:
@@ -191,8 +217,10 @@ Typical interpretation:
 ### `artifacts`
 
 - the artifact object is always present
-- individual fields may be `null`
+- `htmlReport`, `testResultsJson`, and `testResultsXml` are `string | null`
 - `traceFiles` is always an array, even when empty
+- missing artifact files are represented by `null` or `[]`
+- artifact keys are never omitted
 
 This keeps the result shape predictable for both reviewers and downstream consumers.
 

@@ -192,7 +192,7 @@ Expected v1 fields:
 
 This matters because the target is the approved request shape, while the command is the derived invocation. Those should be related, but not conceptually merged.
 
-For rejected requests, the repository may later choose whether to include a partially normalized target or omit it. For v1, the stronger default is to include the normalized target when available and keep the shape predictable.
+For v1, the stronger default is to always include a normalized target in the result so the review shape remains stable.
 
 ### `command`
 
@@ -247,7 +247,13 @@ Artifact values should use repo-relative paths.
 
 This field exists because evidence is part of the review contract, not an incidental byproduct.
 
-For v1, the artifact object should still be present even when some referenced files do not exist yet. Stable shape is more useful than forcing downstream consumers to infer meaning from missing keys.
+For v1, the artifact object should always be present.
+
+Missing scalar artifact files should be represented by `null`.
+
+`traceFiles` should always be an array, even when empty.
+
+Artifact keys should never be omitted from the result shape.
 
 ### `summary`
 

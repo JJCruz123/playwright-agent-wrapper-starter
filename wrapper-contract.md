@@ -91,6 +91,8 @@ Required.
 
 Must match one of the explicitly allowlisted Playwright project names defined by the repository.
 
+For v1, the public sample allowlist is intentionally small.
+
 Unknown project names must be rejected.
 
 The wrapper should not infer project names and should not fall back silently.
@@ -120,7 +122,16 @@ If present, it must be handled as a discrete Playwright filter argument.
 
 It must not be treated as raw shell text.
 
-The wrapper may later impose additional restrictions on `grep`, but v1 should at minimum preserve argument-level safety and reject attempts to use it as a command injection surface.
+For v1, `grep` must satisfy all of the following:
+
+- it must be a string
+- it must not be empty after trimming
+- it must not exceed 200 characters
+- it must be passed as a discrete Playwright argument, not interpolated into raw shell text
+
+The wrapper does not need a separate regex-validation layer in v1.
+
+The important requirement is that `grep` remains bounded input, not a shell-construction surface.
 
 ### `headed`
 
@@ -136,9 +147,16 @@ The contract itself should remain type-clear.
 
 Optional.
 
-Must be a positive integer within a deliberately small allowed range.
+Must be a positive integer in the allowed v1 range of `1` to `4`.
 
-The exact range may be implementation-defined for v1, but the contract should remain intentionally restrictive.
+For v1, the wrapper must reject:
+
+- `0`
+- negative numbers
+- non-integer values
+- values above `4`
+
+If omitted, the wrapper may use its default execution behavior.
 
 This field exists to allow a bounded degree of execution control, not to expose unrestricted runtime tuning.
 
