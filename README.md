@@ -108,6 +108,33 @@ The first release will not include:
 
 These may be discussed later as extensions, but they are not part of the first release.
 
-## Status
+## Planned folder structure
 
-Early design-stage starter repo. Initial scope is intentionally narrow.
+The public starter is expected to stay small and easy to inspect.
+
+```text
+playwright-agent-wrapper-starter/
+├─ README.md
+├─ package.json
+├─ playwright.config.ts
+├─ tests/
+│  ├─ smoke/
+│  │  └─ example.spec.ts
+├─ tools/
+│  └─ agent/
+│     ├─ runPlaywrightTarget.ts
+│     ├─ runPlaywrightTargetCli.ts
+│     ├─ validateInputs.ts
+│     ├─ playwrightArtifacts.ts
+│     └─ resultSchema.ts
+├─ artifacts/
+│  └─ .gitkeep
+├─ docs/
+│  ├─ architecture.md
+│  ├─ wrapper-contract.md
+│  ├─ result-schema.md
+│  ├─ artifact-model.md
+│  └─ human-review-model.md
+└─ examples/
+   ├─ generic/
+   └─ cursor/
