@@ -72,24 +72,22 @@
   },
   "suites": [
     {
-      "title": "smoke\\example.spec.ts",
-      "file": "smoke/example.spec.ts",
+      "title": "unit\\validateInputs.spec.ts",
+      "file": "unit/validateInputs.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "smoke example",
-          "file": "smoke/example.spec.ts",
-          "line": 3,
+          "title": "validateAndNormalizeTarget",
+          "file": "unit/validateInputs.spec.ts",
+          "line": 7,
           "column": 6,
           "specs": [
             {
-              "title": "should support grep-friendly naming @smoke",
+              "title": "accepts a minimal valid request",
               "ok": true,
-              "tags": [
-                "smoke"
-              ],
+              "tags": [],
               "tests": [
                 {
                   "timeout": 30000,
@@ -107,7 +105,7 @@
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-05-02T15:23:02.144Z",
+                      "startTime": "2026-05-02T15:27:43.401Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -115,9 +113,519 @@
                   "status": "expected"
                 }
               ],
-              "id": "9749890de689b6b7a081-82f61e7083fbf5256bf9",
-              "file": "smoke/example.spec.ts",
+              "id": "1a586bd666d3935f1713-26bfc0303e0789a65685",
+              "file": "unit/validateInputs.spec.ts",
               "line": 8,
+              "column": 7
+            },
+            {
+              "title": "accepts a valid spec path inside tests",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.429Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-3f4a1514d1ef4e856113",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "normalizes backslashes in spec paths",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.446Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-f72ed0f5217d08fda19d",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 31,
+              "column": 7
+            },
+            {
+              "title": "accepts a valid grep value",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.460Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-acc38df75b7a6cfff32d",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 40,
+              "column": 7
+            },
+            {
+              "title": "accepts valid workers in the allowed range",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.478Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-162c655b5957d9a1fef4",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 49,
+              "column": 7
+            },
+            {
+              "title": "rejects an unknown project",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.494Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-cc95545e1be125ae3eb7",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 58,
+              "column": 7
+            },
+            {
+              "title": "rejects an absolute spec path",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.508Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-23620d20d14095b09f3c",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 72,
+              "column": 7
+            },
+            {
+              "title": "rejects a spec path outside tests",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.520Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-883ec549e371d9edb2fc",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 81,
+              "column": 7
+            },
+            {
+              "title": "rejects parent-directory traversal in spec path",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.531Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-0fcd21120739a92391cf",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 90,
+              "column": 7
+            },
+            {
+              "title": "rejects a spec path without .spec.ts suffix",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.543Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-cdcc0332ba24674720f5",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 99,
+              "column": 7
+            },
+            {
+              "title": "rejects an empty grep value",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.555Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-6dcfd41999d3dc52d0ea",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 108,
+              "column": 7
+            },
+            {
+              "title": "rejects grep values longer than 200 characters",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.566Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-b6eecc9ed594b0b04b8b",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 117,
+              "column": 7
+            },
+            {
+              "title": "rejects non-boolean headed values",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.578Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-dd9b3762ac979b247fc8",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 126,
+              "column": 7
+            },
+            {
+              "title": "rejects workers below the allowed range",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.589Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-9cd1a5f218a7b25657d3",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 135,
+              "column": 7
+            },
+            {
+              "title": "rejects non-integer workers",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.600Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-ce29a0c1875ca1854c04",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 144,
+              "column": 7
+            },
+            {
+              "title": "rejects workers above the allowed range",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "smoke",
+                  "projectName": "smoke",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-02T15:27:43.609Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1a586bd666d3935f1713-de39f805b1376f0510ba",
+              "file": "unit/validateInputs.spec.ts",
+              "line": 153,
               "column": 7
             }
           ]
@@ -127,9 +635,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-05-02T15:23:01.491Z",
-    "duration": 706.763,
-    "expected": 1,
+    "startTime": "2026-05-02T15:27:42.656Z",
+    "duration": 995.1250000000001,
+    "expected": 16,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
