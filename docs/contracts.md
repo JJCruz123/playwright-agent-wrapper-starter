@@ -2,7 +2,7 @@
 
 This document defines the first-version TypeScript contract shapes for the wrapper layer.
 
-The purpose of this file is to make the public contract concrete enough to implement, test, and review without turning the repository into a schema-heavy system too early.
+The purpose of this file is to make the public contract concrete enough to implement, test, and review without turning the repository into a schema-heavy system.
 
 These contracts formalize three things:
 
@@ -22,14 +22,6 @@ This document adds a more formal layer so the contract is easier to:
 - evolve with clearer change boundaries
 
 For v1, TypeScript interface definitions are the right level of formality.
-
-## Design posture
-
-These contracts are intentionally narrow.
-
-They are meant to formalize the first release of the wrapper pattern, not to anticipate every future execution option or reporting need.
-
-The stronger design choice in v1 is to keep the contract small, stable, and easy to reason about.
 
 ## Request contract
 
@@ -127,8 +119,6 @@ export interface PlaywrightRunResult {
 
 ## Semantic rules
 
-The interfaces above are intentionally small, but they still rely on a few important semantic rules.
-
 ### `project`
 
 - `project` is an allowlisted value, not an arbitrary string
@@ -149,6 +139,8 @@ The interfaces above are intentionally small, but they still rely on a few impor
 - `grep` is passed as a discrete Playwright argument
 - `grep` is never treated as raw shell text
 
+In v1, `grep` is treated as a plain Playwright grep string. The wrapper does not add additional regex policy beyond these bounds.
+
 ### `headed`
 
 - `headed` is optional in the request contract
@@ -160,6 +152,8 @@ The interfaces above are intentionally small, but they still rely on a few impor
 - if present, it must be an integer in the inclusive v1 range of `1` to `4`
 - `0`, negative numbers, non-integers, and values above `4` are invalid
 - when omitted, normalized `workers` becomes `null`
+
+The public sample keeps this bound small so execution control remains deliberately limited.
 
 ### `ok` and `status`
 
@@ -194,8 +188,6 @@ Normalized defaults for v1 are:
 - `headed` becomes `false` when omitted
 - `workers` becomes `null` when omitted
 
-This keeps the result stable and review-friendly.
-
 ### `command`
 
 - `command` is `null` when validation fails before command construction
@@ -221,8 +213,7 @@ Typical interpretation:
 - `traceFiles` is always an array, even when empty
 - missing artifact files are represented by `null` or `[]`
 - artifact keys are never omitted
-
-This keeps the result shape predictable for both reviewers and downstream consumers.
+- artifact paths are emitted as repo-relative paths resolved from repo root
 
 ### `error`
 
@@ -230,11 +221,9 @@ This keeps the result shape predictable for both reviewers and downstream consum
 - `error` should be present for `validation_error` and `execution_error`
 - `error` should typically be omitted for `passed` and `failed`
 
-This allows the contract to carry useful failure detail without forcing a larger error framework into v1.
-
 ## Outcome compatibility model
 
-The contract is intentionally designed to separate:
+The contract separates:
 
 1. wrapper outcome
 2. execution outcome
@@ -246,8 +235,6 @@ That means:
 - a validation rejection must return `ok: false`
 - an execution problem must return `ok: false`
 - test failure is not the same thing as wrapper failure
-
-This distinction is one of the main reasons the result contract exists.
 
 ## Example request object
 
@@ -365,4 +352,4 @@ A contract change is justified when it improves one of these:
 
 A contract change is not justified simply because Playwright exposes more options.
 
-The wrapper exists to preserve a bounded interface, not to mirror the full Playwright surface area.
+The wrapper preserves a bounded interface rather than mirroring the full Playwright surface area.

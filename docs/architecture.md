@@ -2,9 +2,9 @@
 
 This document describes the architectural model for the repository.
 
-The purpose of this project is not to build a new test framework or replace Playwright. The purpose is to demonstrate a governed execution layer that sits between an external reasoning system and raw Playwright execution.
+The purpose of this project is to demonstrate a governed execution layer that sits between an external reasoning system and raw Playwright execution.
 
-The architecture is intentionally small.
+The architecture stays intentionally small.
 
 Its value comes from clear boundaries, explicit contracts, and review-friendly outputs.
 
@@ -21,7 +21,7 @@ A system may be able to decide what should be tested, but that does not mean it 
 
 That pattern creates avoidable problems in safety, predictability, and reviewability.
 
-This repository explores a narrower model:
+This repository uses a narrower model:
 
 - external reasoning remains external
 - execution is mediated through a governed wrapper
@@ -62,7 +62,7 @@ The operation contract layer defines:
 - normalized result shape
 - allowed status semantics
 
-This layer is responsible for constraining the public interface.
+This layer constrains the public interface.
 
 In the repository, it is represented by:
 
@@ -103,7 +103,7 @@ In the repository, it is represented by:
 
 ### 4. Reporting
 
-The reporting layer is intentionally minimal in v1.
+The reporting layer is minimal in v1.
 
 Its role is to acknowledge that observation and reporting are not the same concern.
 
@@ -111,11 +111,9 @@ In this repository:
 
 - native Playwright HTML, JSON, and JUnit outputs provide the detailed reporting surface
 - the wrapper only surfaces stable references and review guidance
-- a dedicated reporting subsystem is intentionally deferred
+- a dedicated reporting subsystem is deferred
 
 This is why `tools/agent/reporting/` exists structurally, but does not yet contain substantive implementation.
-
-That restraint is deliberate.
 
 ## Core architectural idea
 
@@ -134,7 +132,7 @@ That is what turns it into a boundary instead of just another convenience script
 
 ## System components
 
-The first-version architecture is intentionally composed of a small number of parts.
+The first-version architecture is composed of a small number of parts.
 
 ### 1. Playwright test project
 
@@ -165,7 +163,7 @@ This layer is the operational center of the repository.
 
 ### 3. Contract layer
 
-Validation and result semantics are treated as first-class architectural concerns, not helper details.
+Validation and result semantics are treated as first-class architectural concerns.
 
 Their role is to enforce constraints such as:
 
@@ -208,8 +206,6 @@ The architecture is centered on boundaries.
 
 The caller may decide what it wants attempted, but it does not control raw command construction.
 
-That separation matters because reasoning systems are often useful at suggestion and selection, but less trustworthy when given broad operational freedom.
-
 ### Boundary 2: request vs command
 
 The public interface is a request object.
@@ -224,17 +220,13 @@ The wrapper executes the run and returns structured output.
 
 Human or downstream review happens afterward against a normalized result.
 
-This avoids conflating “something ran” with “the outcome is understood.”
-
 ### Boundary 4: observation vs reporting
 
-Observation exists to preserve compact evidence and review-friendly output.
+Observation preserves compact evidence and review-friendly output.
 
-Reporting exists to provide deeper run detail and presentation.
+Reporting provides deeper run detail and presentation.
 
 In v1, the wrapper implements observation lightly and relies on native Playwright reporting for deeper detail.
-
-That separation is one of the key architectural choices in the repository.
 
 ### Boundary 5: native Playwright reporting vs wrapper evidence model
 
@@ -257,13 +249,7 @@ The first-version request flow follows this sequence:
 7. normalize the operational and test outcome
 8. return a compact result for review
 
-This flow is deliberately simple.
-
-Complexity is reduced by refusing to expose more execution freedom than the repository needs.
-
 ## Result flow
-
-The result flow is designed to support both machines and humans.
 
 A normalized result should make these questions easy to answer:
 
@@ -334,7 +320,6 @@ This shape reflects the architectural priorities of the project:
 - observation separated from reporting
 - artifact-aware results
 - docs that explain design decisions
-- examples kept out of the core implementation path
 
 ## Design tradeoffs
 
@@ -344,33 +329,23 @@ This architecture is intentionally opinionated.
 
 The wrapper does less than a generic command interface.
 
-That is a strength, not a weakness.
-
 The narrower the boundary, the easier it is to validate, test, and review.
 
 ### Tradeoff: observation over custom reporting
 
 The wrapper focuses on compact evidence and review guidance rather than building a second reporting framework.
 
-That keeps the implementation honest and aligned with the repository’s goal.
-
 ### Tradeoff: reviewability over raw power
 
 The result model favors clarity and evidence over exhaustively exposing runner internals.
 
-That makes the system easier to understand in practice.
-
 ### Tradeoff: small public pattern over broad platform ambition
 
-This repository is not trying to prove a complete agent platform.
-
-It is trying to demonstrate one credible architectural pattern well.
-
-That restraint is part of the design.
+This repository demonstrates one architectural pattern well rather than broad platform ambition.
 
 ## Non-goals
 
-The architecture explicitly does not attempt to provide:
+The architecture does not attempt to provide:
 
 - arbitrary command execution
 - browser-driving agent orchestration
@@ -380,8 +355,6 @@ The architecture explicitly does not attempt to provide:
 - dashboarding or telemetry platforms
 - enterprise workflow automation
 
-Those concerns may exist elsewhere, but they are not needed to prove the core execution-boundary pattern.
-
 ## Architectural summary
 
 The architecture can be summarized simply:
@@ -389,8 +362,6 @@ The architecture can be summarized simply:
 - the **operation contract** layer constrains the public interface
 - the **execution** layer runs approved Playwright targets
 - the **observation** layer captures compact evidence and review-oriented output
-- the **reporting** layer remains intentionally minimal in v1 and relies on native Playwright reporting for detail
+- the **reporting** layer remains minimal in v1 and relies on native Playwright reporting for detail
 
 The repository exists to show that this layered seam can be small, practical, and reusable.
-
-That is the central architectural idea.

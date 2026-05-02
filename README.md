@@ -4,11 +4,11 @@ A public engineering showcase for bounded, reviewable Playwright execution in AI
 
 This project demonstrates a practical pattern for placing a governed wrapper layer between an AI system and raw Playwright execution.
 
-The focus is not on autonomous agents or prompt tricks. The focus is on execution boundaries: validating what can be run, constraining how it is run, capturing evidence, and returning structured results that a human can review.
+The focus is on execution boundaries: validating what can be run, constraining how it is run, capturing evidence, and returning structured results that a human can review.
 
 ## The problem
 
-AI-assisted tooling can accelerate QA workflows, but most integrations still rely on a weak operational boundary: letting an assistant run broad terminal commands and hoping the outcome is understandable afterward.
+AI-assisted tooling can accelerate QA workflows, but many integrations still rely on a weak operational boundary: letting an assistant run broad terminal commands and hoping the outcome is understandable afterward.
 
 That approach creates predictable problems:
 
@@ -19,11 +19,11 @@ That approach creates predictable problems:
 - evidence is scattered across raw tool output
 - reasoning and execution are too tightly coupled
 
-In other words, the useful idea is real, but the execution boundary is often under-designed.
+The useful idea is real, but the execution boundary is often under-designed.
 
 ## What this project demonstrates
 
-This repo explores a narrower and more governable model.
+This repo uses a narrower and more governable model.
 
 Instead of exposing arbitrary terminal access, it introduces a small wrapper layer around Playwright execution that is designed to:
 
@@ -41,9 +41,7 @@ The goal is to demonstrate a reusable QA/tooling pattern, not to build a full ag
 
 There is growing interest in agent-assisted development and QA, but many implementations jump too quickly from “AI can help” to “AI should directly operate the environment.”
 
-This project takes the opposite stance.
-
-The more credible path is often:
+A more credible path is:
 
 1. define the execution contract
 2. bound the allowed inputs
@@ -51,7 +49,7 @@ The more credible path is often:
 4. preserve evidence for review
 5. keep a human in the loop
 
-That design is slower to hype, but stronger in real engineering environments.
+That design is less flashy, but stronger in real engineering environments.
 
 ## Architectural idea
 
@@ -83,13 +81,11 @@ In the first release:
 - **operation contract** is implemented through validation rules, normalized types, and contract docs
 - **execution** is implemented through the bounded Playwright runner and CLI entry point
 - **observation** is implemented through normalized run results, artifact references, and review-oriented summaries
-- **reporting** is intentionally minimal and deferred; native Playwright reports remain the detailed reporting layer in v1
+- **reporting** is minimal in v1; native Playwright reports remain the detailed reporting layer
 
-This keeps the architecture visible without overbuilding the public starter.
+## First-release shape
 
-## Intended first-release shape
-
-The first release is intentionally narrow.
+The first release stays narrow.
 
 It includes:
 
@@ -102,7 +98,7 @@ It includes:
 - artifact path collection
 - lightweight design documentation for review and teaching
 
-The initial input surface is intentionally small:
+The initial input surface is small:
 
 - `project`
 - optional `spec`
@@ -110,21 +106,16 @@ The initial input surface is intentionally small:
 - optional `headed`
 - optional `workers`
 
-This is enough to demonstrate the pattern without pretending to solve every workflow in v1.
-
 ## What this repo is not
 
 This repo is not:
 
-- a Cursor-specific project
 - a prompt library
 - a replacement for Playwright CLI
 - a replacement for Playwright MCP
 - a browser-driving agent framework
 - an autonomous QA system
 - a generic “AI for testing” concept repo
-
-Cursor may appear later as one example integration surface, but the core design is tool-agnostic.
 
 ## Public scope
 
@@ -139,7 +130,7 @@ Its role is to showcase:
 - artifact and evidence modeling
 - human-review-oriented workflow design
 
-Some implementation details may remain simplified in public form to keep the repo focused, teachable, and appropriate for open portfolio use.
+Some implementation details remain simplified in public form to keep the repo focused, teachable, and appropriate for portfolio use.
 
 ## Repository structure
 
@@ -184,10 +175,8 @@ This structure is intentionally small and layered.
 - `tools/agent/contract/` contains input validation and normalized result definitions.
 - `tools/agent/execution/` contains the bounded runner and CLI entry point.
 - `tools/agent/observation/` contains artifact collection for review-oriented outputs.
-- `tools/agent/reporting/` exists to make the fourth layer visible, but detailed reporting remains deferred in v1.
+- `tools/agent/reporting/` makes the fourth layer visible, while detailed reporting remains deferred in v1.
 - `docs/` explains the architectural model, contracts, schema, evidence handling, and review workflow.
-
-The wrapper layer is the main subject of the project.
 
 ## Wrapper contract preview
 
@@ -236,10 +225,10 @@ The prose docs explain the architectural boundary and review model. The contract
 
 ## Design principles
 
-This repo is being shaped around a few explicit principles:
+This repo is shaped around a few explicit principles:
 
 - bounded execution is more credible than arbitrary command access
-- validation should happen before invocation, not after failure
+- validation should happen before invocation
 - execution output should be normalized for review
 - artifact references should be first-class
 - reasoning and execution should remain separate concerns
@@ -258,13 +247,11 @@ To keep the first release believable, the following are out of scope:
 - enterprise approval systems
 - distributed execution infrastructure
 
-These may be explored later, but they are not necessary to prove the core pattern.
-
 ## Status
 
-This project is currently in the first public implementation phase.
+This project is in the first public implementation phase.
 
-The current version demonstrates a bounded Playwright wrapper with:
+The current version demonstrates:
 
 - contract-layer validation
 - execution-layer target running

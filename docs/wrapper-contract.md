@@ -2,7 +2,7 @@
 
 This document defines the public execution contract for the wrapper layer in this repository.
 
-The purpose of the wrapper is not to replace Playwright. The purpose is to define a governed boundary around Playwright execution that another system can call and a human can review.
+The wrapper does not replace Playwright. It defines a governed boundary around Playwright execution that another system can call and a human can review.
 
 ## Why this contract exists
 
@@ -10,15 +10,13 @@ AI-assisted workflows are often weakest at the execution boundary.
 
 A reasoning system may be useful for deciding what to run, but that does not mean it should be allowed to construct arbitrary terminal commands or operate directly against the environment without constraints.
 
-This wrapper contract exists to enforce a narrower model:
+This wrapper contract enforces a narrower model:
 
 - the caller provides a small validated request
 - the wrapper decides whether that request is allowed
 - the wrapper constructs an approved Playwright invocation
 - the wrapper returns a normalized result and artifact references
 - a human or another system can review the outcome without reconstructing raw shell behavior
-
-The contract is intentionally small because boundedness is part of the design.
 
 ## Trust boundary
 
@@ -42,16 +40,13 @@ It does not treat caller-supplied command fragments as trusted input.
 
 ## Contract goals
 
-The first version of the contract is designed to satisfy a small number of goals well:
+The first version of the contract is designed to:
 
 - constrain what can be executed
 - make validation rules explicit
 - keep command construction deterministic
 - separate execution concerns from reasoning concerns
 - produce a result that is useful for both systems and reviewers
-- preserve room for later extension without over-designing v1
-
-This is a wrapper contract, not a workflow engine contract.
 
 ## Accepted request shape
 
@@ -79,11 +74,9 @@ Example request:
 
 ## Validation posture
 
-Validation is part of the contract, not an implementation detail.
+Validation is part of the contract.
 
-The wrapper should reject invalid or out-of-policy requests before attempting execution.
-
-That is important for both safety and reviewability.
+The wrapper rejects invalid or out-of-policy requests before attempting execution.
 
 ### `project`
 
@@ -93,9 +86,7 @@ Must match one of the explicitly allowlisted Playwright project names defined by
 
 For v1, the public sample allowlist is intentionally small.
 
-Unknown project names must be rejected.
-
-The wrapper should not infer project names and should not fall back silently.
+Unknown project names are rejected.
 
 ### `spec`
 
@@ -105,33 +96,27 @@ If present, it must be a repo-relative path within the approved test area.
 
 For v1, that means the path must remain inside `tests/`.
 
-The wrapper must reject:
+The wrapper rejects:
 
 - absolute paths
 - parent-directory traversal
 - paths outside the approved test area
 - malformed or ambiguous paths
 
-The spec value is part of a bounded target selector, not a free-form file input.
-
 ### `grep`
 
 Optional.
 
-If present, it must be handled as a discrete Playwright filter argument.
-
-It must not be treated as raw shell text.
+If present, it is handled as a discrete Playwright filter argument.
 
 For v1, `grep` must satisfy all of the following:
 
 - it must be a string
 - it must not be empty after trimming
 - it must not exceed 200 characters
-- it must be passed as a discrete Playwright argument, not interpolated into raw shell text
+- it is passed as a discrete Playwright argument, not interpolated into raw shell text
 
-The wrapper does not need a separate regex-validation layer in v1.
-
-The important requirement is that `grep` remains bounded input, not a shell-construction surface.
+In v1, `grep` is treated as a plain Playwright grep string. The wrapper does not add separate regex policy beyond these bounds.
 
 ### `headed`
 
@@ -139,9 +124,7 @@ Optional.
 
 Boolean only.
 
-The wrapper should not accept equivalent string variants such as `"true"` or `"false"` unless the CLI layer explicitly normalizes them before contract validation.
-
-The contract itself should remain type-clear.
+The contract does not accept equivalent string variants unless the CLI layer explicitly normalizes them before validation.
 
 ### `workers`
 
@@ -149,16 +132,16 @@ Optional.
 
 Must be a positive integer in the allowed v1 range of `1` to `4`.
 
-For v1, the wrapper must reject:
+The wrapper rejects:
 
 - `0`
 - negative numbers
 - non-integer values
 - values above `4`
 
-If omitted, the wrapper may use its default execution behavior.
+This upper bound is intentionally small in the public sample so the wrapper exposes only a narrow amount of execution control.
 
-This field exists to allow a bounded degree of execution control, not to expose unrestricted runtime tuning.
+If omitted, the wrapper uses its default execution behavior.
 
 ## Command construction policy
 
@@ -175,10 +158,6 @@ The public interface is the request object.
 
 The shell command is an internal derivative of validated input.
 
-That distinction matters.
-
-It keeps the wrapper contract stable even if the exact execution implementation changes later.
-
 ## Execution responsibilities
 
 The wrapper layer is responsible for:
@@ -188,8 +167,6 @@ The wrapper layer is responsible for:
 - executing the run through the local Playwright installation
 - collecting expected artifact references
 - returning a normalized result object
-
-This keeps the wrapper focused on bounded execution.
 
 ## Explicit non-responsibilities
 
@@ -203,33 +180,23 @@ The wrapper layer is not responsible for:
 - performing broad environment automation
 - acting as a generic command runner
 
-These are important non-goals.
-
-Without them, the boundary becomes vague and the wrapper loses credibility.
-
 ## Operational outcome model
 
-The contract should distinguish between at least two different classes of outcome:
+The contract distinguishes between at least two classes of outcome:
 
 ### 1. Wrapper-level outcome
 
 Did the wrapper successfully validate, construct, and attempt the run according to policy?
 
-This is an operational question.
-
 ### 2. Test-run outcome
 
 Did the Playwright execution pass or fail?
 
-This is a test result question.
-
 Those are related, but they are not the same.
 
-A correctly governed wrapper can still return a valid completed result for a failing test run.
+A correctly governed wrapper can return a valid completed result for a failing test run.
 
-Likewise, an invalid request can fail at the wrapper boundary without any Playwright execution occurring at all.
-
-That distinction should remain clear throughout the result model.
+An invalid request can fail at the wrapper boundary without any Playwright execution occurring at all.
 
 ## Review-oriented design
 
@@ -243,8 +210,6 @@ A reviewer should be able to answer these questions without reverse-engineering 
 - what the outcome was
 - what evidence was produced
 - where to inspect next
-
-That is why normalized results and artifact references are part of the design, not optional extras.
 
 ## Example result expectation
 
@@ -278,27 +243,6 @@ A successful wrapper execution is expected to produce a normalized result with f
 
 The exact result schema is defined separately in `docs/result-schema.md`.
 
-## Extension posture
-
-This contract is intentionally narrow in v1.
-
-That is a design choice, not an omission.
-
-A strong first version should prove that a governed execution seam can be:
-
-- understandable
-- enforceable
-- reviewable
-- reusable
-
-Only after that is clear should the contract expand.
-
-Likely future extensions may include additional selectors, richer artifact references, or more explicit policy controls, but none of those are necessary to validate the core pattern.
-
 ## Design stance
 
-This repository is not trying to show that an agent can do everything.
-
-It is trying to show that a high-trust execution boundary can be designed deliberately.
-
-That is the point of the wrapper contract.
+This repository is demonstrating a high-trust execution boundary around Playwright, with explicit policy, normalized output, and review-oriented evidence.
