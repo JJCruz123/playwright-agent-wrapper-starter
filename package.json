@@ -1,0 +1,20 @@
+{
+  "name": "playwright-agent-wrapper-starter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A public engineering showcase for bounded, reviewable Playwright execution in AI-assisted QA workflows.",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:smoke": "playwright test --project=smoke",
+    "show-report": "playwright show-report artifacts/playwright-report",
+    "agent:run": "tsx tools/agent/execution/runPlaywrightTargetCli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^22.10.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
