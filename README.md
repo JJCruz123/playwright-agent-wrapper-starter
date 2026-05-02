@@ -49,7 +49,7 @@ A more credible path is:
 4. preserve evidence for review
 5. keep a human in the loop
 
-That design is less flashy, but stronger in real engineering environments.
+That design is more reliable in real engineering environments.
 
 ## Architectural idea
 

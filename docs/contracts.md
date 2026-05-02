@@ -139,7 +139,7 @@ export interface PlaywrightRunResult {
 - `grep` is passed as a discrete Playwright argument
 - `grep` is never treated as raw shell text
 
-In v1, `grep` is treated as a plain Playwright grep string. The wrapper does not add additional regex policy beyond these bounds.
+In v1, `grep` is treated as a plain Playwright grep string, validated only for type, emptiness, and length, and passed as a discrete Playwright argument.
 
 ### `headed`
 
@@ -153,7 +153,7 @@ In v1, `grep` is treated as a plain Playwright grep string. The wrapper does not
 - `0`, negative numbers, non-integers, and values above `4` are invalid
 - when omitted, normalized `workers` becomes `null`
 
-The public sample keeps this bound small so execution control remains deliberately limited.
+The public sample keeps this bound small so execution control remains deliberately narrow and reviewable.
 
 ### `ok` and `status`
 
@@ -214,6 +214,7 @@ Typical interpretation:
 - missing artifact files are represented by `null` or `[]`
 - artifact keys are never omitted
 - artifact paths are emitted as repo-relative paths resolved from repo root
+- the wrapper does not emit absolute filesystem paths in result output
 
 ### `error`
 

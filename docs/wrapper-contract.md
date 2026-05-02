@@ -116,7 +116,7 @@ For v1, `grep` must satisfy all of the following:
 - it must not exceed 200 characters
 - it is passed as a discrete Playwright argument, not interpolated into raw shell text
 
-In v1, `grep` is treated as a plain Playwright grep string. The wrapper does not add separate regex policy beyond these bounds.
+In v1, `grep` is treated as a plain Playwright grep string, validated only for type, emptiness, and length, and passed as a discrete Playwright argument.
 
 ### `headed`
 
@@ -139,7 +139,7 @@ The wrapper rejects:
 - non-integer values
 - values above `4`
 
-This upper bound is intentionally small in the public sample so the wrapper exposes only a narrow amount of execution control.
+This upper bound stays intentionally small in the public sample so execution control remains narrow and reviewable.
 
 If omitted, the wrapper uses its default execution behavior.
 
