@@ -1,33 +1,33 @@
 # Human review model
 
-This document defines how the repository expects a human reviewer to interact with wrapper outputs.
+This document defines how a human reviewer is expected to interact with wrapper outputs in this repository.
 
-The goal is not to create a formal approval workflow or enterprise governance system. The goal is to make bounded Playwright execution understandable enough that a reviewer can quickly determine what happened, what evidence exists, and what should happen next.
+The goal is not to create an approval workflow system or a formal governance platform. The goal is to make bounded Playwright execution understandable enough that a reviewer can quickly determine what happened, what evidence exists, and what should happen next.
 
 ## Why this model exists
 
-A governed execution wrapper is only half of the pattern.
+A governed execution wrapper is only half of the design.
 
 The other half is review.
 
-If a system can request a Playwright run but the result is difficult to interpret, then the execution boundary is still weak in practice. Strong boundaries do not end at invocation safety. They also need outputs that support efficient human judgment.
+If a system can request a Playwright run but the output is still difficult to interpret, then the operational boundary is weak in practice. Invocation safety alone is not enough. The result also has to support efficient human judgment.
 
-This review model exists to make the wrapper useful in real engineering workflows by answering a simple question:
+This review model exists to answer one practical question:
 
-**What should a reviewer be able to understand from one execution result without digging through raw terminal history?**
+**What should a reviewer be able to understand from one normalized execution result without reconstructing shell history?**
 
 ## Design goals
 
 The first-version human review model is designed to do a few things well:
 
-- keep reviewers oriented around structured outputs
-- reduce dependence on raw shell logs
+- orient the reviewer around structured outputs
+- reduce dependence on raw terminal logs
 - make evidence easy to locate
-- distinguish policy failures from execution failures and test failures
-- support practical next-step decisions
-- stay lightweight enough for a small public starter repository
+- distinguish validation failures from execution failures and test failures
+- support bounded next-step decisions
+- remain lightweight enough for a small public repository
 
-This is a review model, not a case management system.
+This is a review model, not a workflow engine.
 
 ## Core review principle
 
@@ -50,7 +50,7 @@ A human reviewer is expected to use a small set of inputs together:
 - the HTML report when deeper inspection is needed
 - trace files or machine-readable results when the failure requires more detail
 
-The reviewer should not need to reconstruct execution from shell history as the default path.
+The reviewer should not need to reconstruct execution from terminal history as the default path.
 
 ## Review flow
 
@@ -66,16 +66,16 @@ The reviewer should start with the top-level result fields:
 - `command`
 - `summary`
 
-This should give enough context to decide whether the run:
+This should give enough context to determine whether the run:
 
 - passed cleanly
 - failed at the test layer
 - was rejected at validation
 - encountered an execution problem
 
-### Step 2: confirm the target
+### Step 2: confirm the approved target
 
-Before looking at deeper artifacts, the reviewer should confirm the requested target.
+Before looking at deeper artifacts, the reviewer should confirm the approved target.
 
 That means checking fields such as:
 
@@ -87,11 +87,11 @@ That means checking fields such as:
 
 This prevents time being wasted reviewing the wrong run or misinterpreting a valid result for the wrong target.
 
-### Step 3: inspect the primary evidence
+### Step 3: inspect primary evidence
 
 The primary evidence path should usually be:
 
-1. result summary
+1. normalized result summary
 2. HTML report
 3. machine-readable results
 4. trace files if deeper debugging is needed
@@ -105,24 +105,24 @@ The review model should help a human reach a bounded decision such as:
 - no further action needed
 - inspect failing assertions in the report
 - inspect traces for deeper debugging
-- fix invalid input or wrapper usage
+- correct invalid input or wrapper usage
 - investigate environment or execution issues
 
 The point is not just to surface data.
 
 The point is to support an informed next step.
 
-## Outcome categories for review
+## Outcome model for review
 
-The review model becomes much easier when result outcomes are normalized into a small set.
+The review model becomes much easier to use when result outcomes are normalized into a small set.
 
 ### Passed
 
 Interpretation:
 
 - the wrapper accepted the request
-- the execution completed
-- the Playwright target passed
+- execution completed normally
+- the selected Playwright target passed
 
 Typical reviewer action:
 
@@ -134,12 +134,12 @@ Typical reviewer action:
 Interpretation:
 
 - the wrapper accepted the request
-- execution completed
-- the Playwright target failed
+- execution completed normally
+- the selected Playwright target failed
 
 Typical reviewer action:
 
-- inspect HTML report first
+- inspect the HTML report first
 - inspect traces if the report is insufficient
 - determine whether the failure is product, test, or setup related
 
@@ -153,7 +153,7 @@ Interpretation:
 Typical reviewer action:
 
 - correct the request
-- verify the caller used an allowed target shape
+- verify that the caller used an allowed target shape
 - confirm that the rejection was expected and well explained
 
 ### Execution error
@@ -169,35 +169,48 @@ Typical reviewer action:
 - inspect execution context and artifact availability
 - determine whether the issue is environmental, configuration-related, or wrapper-related
 
+## Outcome matrix
+
+| `ok` | `status` | Reviewer interpretation | Typical next action |
+|---|---|---|---|
+| `true` | `passed` | Request accepted, execution completed, tests passed | Record success and move on |
+| `true` | `failed` | Request accepted, execution completed, tests failed | Open HTML report, then inspect traces if needed |
+| `false` | `validation_error` | Request rejected before execution | Correct request shape or caller behavior |
+| `false` | `execution_error` | Execution did not complete normally | Inspect environment, wrapper behavior, and available artifacts |
+
+This matrix is intentionally small.
+
+Its purpose is to make first-pass review fast and consistent.
+
 ## Review posture
 
-The first version of the repo should remain strongly human-in-the-loop.
+The first version of the repository should remain strongly human-in-the-loop.
 
 That means:
 
 - the wrapper can normalize and summarize
 - the wrapper can surface evidence
-- the wrapper can point to the next review area
+- the wrapper can suggest where to inspect next
 
 But the wrapper should not pretend to replace reviewer judgment.
 
-This is an important design choice.
+This is an important architectural choice.
 
-The repo is demonstrating review-friendly execution, not autonomous correctness.
+The repository is demonstrating review-friendly execution, not autonomous correctness.
 
 ## What the reviewer should not have to do
 
-A good review model reduces unnecessary effort.
+A good review model removes unnecessary work.
 
 A reviewer should not have to:
 
 - reconstruct the run from ad hoc terminal history
 - guess where artifacts were written
-- infer whether a problem was validation, execution, or test failure
+- infer whether the problem was validation, execution, or test failure
 - reverse-engineer the requested target from raw CLI fragments
 - interpret arbitrary output formats with no stable structure
 
-If those tasks are still required, the wrapper has not yet improved the operational boundary enough.
+If those tasks are still required, the wrapper has not improved the operational boundary enough.
 
 ## Summary guidance
 
@@ -249,11 +262,11 @@ It is a lightweight model for understanding the output of governed execution.
 
 ## Extension posture
 
-The review model may grow later to include richer review summaries, reviewer notes, or explicit recommended actions.
+The review model may grow later to include richer review summaries, explicit review notes, or more structured recommended actions.
 
 For v1, the stronger choice is restraint.
 
-A small review model that is consistent and useful is better than a larger one that feels speculative.
+A small review model that is consistent and useful is better than a larger one that feels speculative or productized before the core pattern is proven.
 
 ## Design stance
 
