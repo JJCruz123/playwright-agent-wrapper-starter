@@ -41,6 +41,82 @@ In many systems, those concerns get collapsed together.
 
 This project separates them deliberately.
 
+## Layer model
+
+The repository uses a four-layer model:
+
+1. **operation contract**
+2. **execution**
+3. **observation**
+4. **reporting**
+
+This model keeps responsibilities visible without requiring a large implementation surface.
+
+### 1. Operation contract
+
+The operation contract layer defines:
+
+- accepted request shape
+- validation policy
+- normalized target shape
+- normalized result shape
+- allowed status semantics
+
+This layer is responsible for constraining the public interface.
+
+In the repository, it is represented by:
+
+- `tools/agent/contract/validateInputs.ts`
+- `tools/agent/contract/resultSchema.ts`
+- `docs/contracts.md`
+- `docs/wrapper-contract.md`
+- `docs/result-schema.md`
+
+### 2. Execution
+
+The execution layer is responsible for:
+
+- turning validated intent into an approved Playwright invocation
+- running only supported target shapes
+- preserving safe command construction
+- returning normalized results rather than raw shell behavior
+
+In the repository, it is represented by:
+
+- `tools/agent/execution/runPlaywrightTarget.ts`
+- `tools/agent/execution/runPlaywrightTargetCli.ts`
+
+### 3. Observation
+
+The observation layer is responsible for:
+
+- surfacing artifact references
+- preserving evidence in a compact result shape
+- supporting human review without terminal reconstruction
+- connecting execution output to the review model
+
+In the repository, it is represented by:
+
+- `tools/agent/observation/playwrightArtifacts.ts`
+- `docs/artifact-model.md`
+- `docs/human-review-model.md`
+
+### 4. Reporting
+
+The reporting layer is intentionally minimal in v1.
+
+Its role is to acknowledge that observation and reporting are not the same concern.
+
+In this repository:
+
+- native Playwright HTML, JSON, and JUnit outputs provide the detailed reporting surface
+- the wrapper only surfaces stable references and review guidance
+- a dedicated reporting subsystem is intentionally deferred
+
+This is why `tools/agent/reporting/` exists structurally, but does not yet contain substantive implementation.
+
+That restraint is deliberate.
+
 ## Core architectural idea
 
 The core pattern is:
@@ -74,57 +150,43 @@ Playwright remains the underlying test runner and reporting system.
 
 ### 2. Wrapper execution layer
 
-The wrapper execution layer lives under `tools/agent/`.
+The wrapper execution layer lives under `tools/agent/execution/`.
 
 Its role is to:
 
 - accept a bounded request shape
-- validate allowed inputs
+- validate allowed inputs through the contract layer
 - construct an approved invocation
 - launch the Playwright run
-- collect artifact references
+- collect artifact references through the observation layer
 - return a normalized result
 
-This layer is the center of the repository.
+This layer is the operational center of the repository.
 
-It is the governed seam between external intent and local execution.
+### 3. Contract layer
 
-### 3. Validation layer
+Validation and result semantics are treated as first-class architectural concerns, not helper details.
 
-Validation is treated as a first-class architectural concern, not a helper detail.
-
-Its role is to enforce constraints such as:
+Their role is to enforce constraints such as:
 
 - allowed project names
 - allowed spec path boundaries
 - safe handling of `grep`
 - explicit handling of `headed`
 - bounded handling of `workers`
+- stable result and status semantics
 
 This keeps policy decisions visible and testable.
 
-### 4. Result normalization layer
-
-Raw execution behavior is converted into a normalized result shape.
-
-Its role is to distinguish:
-
-- wrapper-level success or failure
-- test-run success or failure
-- validation rejection
-- execution problems
-
-This layer exists to make outcomes easier to review and easier to consume from other systems.
-
-### 5. Artifact reference layer
+### 4. Observation layer
 
 The wrapper surfaces artifact references in a compact and stable structure.
 
 Its role is to make evidence easy to locate without requiring the reviewer to guess where outputs were written.
 
-This keeps artifacts as part of the contract rather than as incidental byproducts.
+This keeps artifacts and review guidance as part of the contract rather than as incidental byproducts.
 
-### 6. Human review layer
+### 5. Human review model
 
 The repository assumes that governed execution is incomplete without review.
 
@@ -164,7 +226,17 @@ Human or downstream review happens afterward against a normalized result.
 
 This avoids conflating “something ran” with “the outcome is understood.”
 
-### Boundary 4: native Playwright reporting vs wrapper evidence model
+### Boundary 4: observation vs reporting
+
+Observation exists to preserve compact evidence and review-friendly output.
+
+Reporting exists to provide deeper run detail and presentation.
+
+In v1, the wrapper implements observation lightly and relies on native Playwright reporting for deeper detail.
+
+That separation is one of the key architectural choices in the repository.
+
+### Boundary 5: native Playwright reporting vs wrapper evidence model
 
 Playwright remains responsible for detailed test reporting.
 
@@ -174,10 +246,10 @@ This keeps the project complementary to Playwright rather than competitive with 
 
 ## Request flow
 
-The first-version request flow is expected to follow this sequence:
+The first-version request flow follows this sequence:
 
 1. receive a narrow request object
-2. validate the request against wrapper policy
+2. validate the request against contract policy
 3. reject invalid requests before execution
 4. derive the Playwright invocation from validated fields
 5. execute the invocation
@@ -220,43 +292,49 @@ This preserves human judgment without requiring raw shell reconstruction.
 
 ## Repository shape
 
-The repository is expected to remain small.
+The repository remains intentionally small.
 
 ```text
 playwright-agent-wrapper-starter/
 ├─ README.md
 ├─ package.json
+├─ tsconfig.json
 ├─ playwright.config.ts
 ├─ tests/
-│  └─ smoke/
-│     └─ example.spec.ts
+│  ├─ smoke/
+│  │  └─ example.spec.ts
+│  └─ unit/
+│     └─ validateInputs.spec.ts
 ├─ tools/
 │  └─ agent/
-│     ├─ runPlaywrightTarget.ts
-│     ├─ runPlaywrightTargetCli.ts
-│     ├─ validateInputs.ts
-│     ├─ playwrightArtifacts.ts
-│     └─ resultSchema.ts
-├─ artifacts/
-│  └─ .gitkeep
+│     ├─ contract/
+│     │  ├─ validateInputs.ts
+│     │  └─ resultSchema.ts
+│     ├─ execution/
+│     │  ├─ runPlaywrightTarget.ts
+│     │  └─ runPlaywrightTargetCli.ts
+│     ├─ observation/
+│     │  └─ playwrightArtifacts.ts
+│     └─ reporting/
+│        └─ .gitkeep
 ├─ docs/
 │  ├─ architecture.md
+│  ├─ contracts.md
 │  ├─ wrapper-contract.md
 │  ├─ result-schema.md
 │  ├─ artifact-model.md
 │  └─ human-review-model.md
-└─ examples/
-   ├─ generic/
-   └─ cursor/
+└─ .gitignore
 ```
 
 This shape reflects the architectural priorities of the project:
 
 - small execution surface
 - explicit contracts
+- observation separated from reporting
 - artifact-aware results
 - docs that explain design decisions
-- examples that stay secondary to the core pattern
+- examples kept out of the core implementation path
 
 ## Design tradeoffs
 
@@ -269,6 +347,12 @@ The wrapper does less than a generic command interface.
 That is a strength, not a weakness.
 
 The narrower the boundary, the easier it is to validate, test, and review.
+
+### Tradeoff: observation over custom reporting
+
+The wrapper focuses on compact evidence and review guidance rather than building a second reporting framework.
+
+That keeps the implementation honest and aligned with the repository’s goal.
 
 ### Tradeoff: reviewability over raw power
 
@@ -302,11 +386,11 @@ Those concerns may exist elsewhere, but they are not needed to prove the core ex
 
 The architecture can be summarized simply:
 
-- Playwright provides execution and native reporting
-- the wrapper provides governance and normalization
-- artifacts provide evidence
-- the review model provides interpretability
+- the **operation contract** layer constrains the public interface
+- the **execution** layer runs approved Playwright targets
+- the **observation** layer captures compact evidence and review-oriented output
+- the **reporting** layer remains intentionally minimal in v1 and relies on native Playwright reporting for detail
 
-The repository exists to show that this seam can be small, practical, and reusable.
+The repository exists to show that this layered seam can be small, practical, and reusable.
 
 That is the central architectural idea.

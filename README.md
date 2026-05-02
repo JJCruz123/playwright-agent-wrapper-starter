@@ -69,11 +69,29 @@ This creates a cleaner boundary between:
 - **execution systems** that perform a controlled run
 - **review systems or humans** that inspect the result and evidence
 
+## Layer model
+
+The repository is organized around four layers:
+
+1. **operation contract**
+2. **execution**
+3. **observation**
+4. **reporting**
+
+In the first release:
+
+- **operation contract** is implemented through validation rules, normalized types, and contract docs
+- **execution** is implemented through the bounded Playwright runner and CLI entry point
+- **observation** is implemented through normalized run results, artifact references, and review-oriented summaries
+- **reporting** is intentionally minimal and deferred; native Playwright reports remain the detailed reporting layer in v1
+
+This keeps the architecture visible without overbuilding the public starter.
+
 ## Intended first-release shape
 
 The first release is intentionally narrow.
 
-It is expected to include:
+It includes:
 
 - a small Playwright sample project
 - a bounded wrapper function for Playwright execution
@@ -123,25 +141,31 @@ Its role is to showcase:
 
 Some implementation details may remain simplified in public form to keep the repo focused, teachable, and appropriate for open portfolio use.
 
-## Planned folder structure
+## Repository structure
 
 ```text
 playwright-agent-wrapper-starter/
 ├─ README.md
 ├─ package.json
+├─ tsconfig.json
 ├─ playwright.config.ts
 ├─ tests/
-│  └─ smoke/
-│     └─ example.spec.ts
+│  ├─ smoke/
+│  │  └─ example.spec.ts
+│  └─ unit/
+│     └─ validateInputs.spec.ts
 ├─ tools/
 │  └─ agent/
-│     ├─ runPlaywrightTarget.ts
-│     ├─ runPlaywrightTargetCli.ts
-│     ├─ validateInputs.ts
-│     ├─ playwrightArtifacts.ts
-│     └─ resultSchema.ts
-├─ artifacts/
-│  └─ .gitkeep
+│     ├─ contract/
+│     │  ├─ validateInputs.ts
+│     │  └─ resultSchema.ts
+│     ├─ execution/
+│     │  ├─ runPlaywrightTarget.ts
+│     │  └─ runPlaywrightTargetCli.ts
+│     ├─ observation/
+│     │  └─ playwrightArtifacts.ts
+│     └─ reporting/
+│        └─ .gitkeep
 ├─ docs/
 │  ├─ architecture.md
 │  ├─ contracts.md
@@ -149,20 +173,19 @@ playwright-agent-wrapper-starter/
 │  ├─ result-schema.md
 │  ├─ artifact-model.md
 │  └─ human-review-model.md
-└─ examples/
-   ├─ generic/
-   └─ cursor/
+└─ .gitignore
 ```
 
-## Folder structure notes
+## Structure notes
 
-This structure is intentionally minimal.
+This structure is intentionally small and layered.
 
-- `tests/` holds a very small Playwright suite used to demonstrate wrapper behavior.
-- `tools/agent/` holds the bounded execution layer, validation, artifact collection, and result shaping.
-- `artifacts/` is the local evidence/output area for runs.
-- `docs/` explains the contract and review model in plain language and formal TypeScript shapes.
-- `examples/` is secondary material, not the center of the repo.
+- `tests/` contains the sample Playwright suite and targeted validation tests.
+- `tools/agent/contract/` contains input validation and normalized result definitions.
+- `tools/agent/execution/` contains the bounded runner and CLI entry point.
+- `tools/agent/observation/` contains artifact collection for review-oriented outputs.
+- `tools/agent/reporting/` exists to make the fourth layer visible, but detailed reporting remains deferred in v1.
+- `docs/` explains the architectural model, contracts, schema, evidence handling, and review workflow.
 
 The wrapper layer is the main subject of the project.
 
@@ -192,7 +215,7 @@ Example result:
     "headed": false,
     "workers": 1
   },
-  "command": "npx playwright test --project smoke tests/smoke/example.spec.ts --workers 1",
+  "command": "npx playwright test --project=smoke tests/smoke/example.spec.ts --workers=1",
   "exitCode": 0,
   "artifacts": {
     "htmlReport": "artifacts/playwright-report/index.html",
@@ -239,6 +262,11 @@ These may be explored later, but they are not necessary to prove the core patter
 
 ## Status
 
-This project is currently in the design and public-structure phase.
+This project is currently in the first public implementation phase.
 
-The first milestone is to define a clean wrapper contract, result schema, artifact model, formal contract shapes, and review model before implementation expands.
+The current version demonstrates a bounded Playwright wrapper with:
+
+- contract-layer validation
+- execution-layer target running
+- observation-layer artifact and result capture
+- minimal reporting posture built on native Playwright outputs
