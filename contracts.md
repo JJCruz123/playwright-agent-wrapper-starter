@@ -2,17 +2,17 @@
 
 This document defines the first-version TypeScript contract shapes for the wrapper layer.
 
-The purpose of this file is to make the public contract more concrete without overbuilding the repository into a schema-heavy system too early.
+The purpose of this file is to make the public contract concrete enough to implement, test, and review without turning the repository into a schema-heavy system too early.
 
-These interfaces are intended to formalize three things:
+These contracts formalize three things:
 
 - the request shape accepted by the wrapper
-- the result shape returned by the wrapper
+- the normalized result shape returned by the wrapper
 - the artifact references surfaced for review
 
 ## Why this document exists
 
-The prose docs define the architecture and behavior of the system.
+The prose docs define the architecture, trust boundary, and review model.
 
 This document adds a more formal layer so the contract is easier to:
 
@@ -23,11 +23,23 @@ This document adds a more formal layer so the contract is easier to:
 
 For v1, TypeScript interface definitions are the right level of formality.
 
+## Design posture
+
+These contracts are intentionally narrow.
+
+They are meant to formalize the first release of the wrapper pattern, not to anticipate every future execution option or reporting need.
+
+The stronger design choice in v1 is to keep the contract small, stable, and easy to reason about.
+
 ## Request contract
 
 ```ts
+export type PlaywrightProjectName = "smoke";
+```
+
+```ts
 export interface PlaywrightTargetRequest {
-  project: string;
+  project: PlaywrightProjectName;
   spec?: string;
   grep?: string;
   headed?: boolean;
@@ -55,11 +67,32 @@ export interface PlaywrightRunSummary {
 }
 ```
 
+## Error contract
+
+```ts
+export type PlaywrightRunErrorCode =
+  | "INVALID_PROJECT"
+  | "INVALID_SPEC"
+  | "INVALID_GREP"
+  | "INVALID_HEADED"
+  | "INVALID_WORKERS"
+  | "COMMAND_CONSTRUCTION_FAILED"
+  | "PROCESS_LAUNCH_FAILED"
+  | "PROCESS_COMPLETION_FAILED";
+```
+
+```ts
+export interface PlaywrightRunError {
+  code: PlaywrightRunErrorCode;
+  detail: string;
+}
+```
+
 ## Target echo contract
 
 ```ts
 export interface NormalizedPlaywrightTarget {
-  project: string;
+  project: PlaywrightProjectName;
   spec: string | null;
   grep: string | null;
   headed: boolean;
@@ -83,17 +116,24 @@ export type PlaywrightRunStatus =
 export interface PlaywrightRunResult {
   ok: boolean;
   status: PlaywrightRunStatus;
-  target: NormalizedPlaywrightTarget | null;
+  target: NormalizedPlaywrightTarget;
   command: string | null;
   exitCode: number | null;
   artifacts: PlaywrightArtifacts;
   summary: PlaywrightRunSummary;
+  error?: PlaywrightRunError;
 }
 ```
 
 ## Semantic rules
 
 The interfaces above are intentionally small, but they still rely on a few important semantic rules.
+
+### `project`
+
+- `project` is an allowlisted value, not an arbitrary string
+- for v1, the documented public sample allowlist is intentionally small
+- if more Playwright projects are introduced later, the union type should expand deliberately
 
 ### `ok` and `status`
 
@@ -115,29 +155,71 @@ ok: false + status: "passed"
 ok: false + status: "failed"
 ```
 
+### `target`
+
+- `target` is always present in the result
+- `target` is the normalized echo of the request as interpreted by the wrapper
+- optional request fields are normalized into explicit values
+
+Normalized defaults for v1 are:
+
+- `spec` becomes `null` when omitted
+- `grep` becomes `null` when omitted
+- `headed` becomes `false` when omitted
+- `workers` becomes `null` when omitted
+
+This keeps the result stable and review-friendly.
+
 ### `command`
 
 - `command` is `null` when validation fails before command construction
 - `command` contains a human-readable invocation when a command was constructed
+- `command` is derived from validated input only
+- `command` is never treated as caller-supplied raw shell text
 
 ### `exitCode`
 
 - `exitCode` is `null` when execution never started
 - `exitCode` contains the observed process exit code when a Playwright process was launched
 
-### `target`
+Typical interpretation:
 
-- `target` is the normalized echo of the approved request
-- for v1, it may be `null` when a request fails too early to normalize reliably
-- when present, its shape should remain stable and review-friendly
+- `exitCode: 0` usually corresponds to a passing run
+- non-zero `exitCode` may correspond to failing tests or execution problems
+- `exitCode: null` means no process was launched
 
 ### `artifacts`
 
-- the artifact object should always be present
+- the artifact object is always present
 - individual fields may be `null`
-- `traceFiles` should always be an array, even when empty
+- `traceFiles` is always an array, even when empty
 
 This keeps the result shape predictable for both reviewers and downstream consumers.
+
+### `error`
+
+- `error` is optional
+- `error` should be present for `validation_error` and `execution_error`
+- `error` should typically be omitted for `passed` and `failed`
+
+This allows the contract to carry useful failure detail without forcing a larger error framework into v1.
+
+## Outcome compatibility model
+
+The contract is intentionally designed to separate:
+
+1. wrapper outcome
+2. execution outcome
+3. test outcome
+
+That means:
+
+- a failing test run can still return `ok: true`
+- a validation rejection must return `ok: false`
+- an execution problem must return `ok: false`
+- test failure is not the same thing as wrapper failure
+
+This distinction is one of the main reasons the result contract exists.
 
 ## Example request object
 
@@ -150,7 +232,7 @@ const request: PlaywrightTargetRequest = {
 };
 ```
 
-## Example result object
+## Example passing result object
 
 ```ts
 const result: PlaywrightRunResult = {
@@ -178,10 +260,81 @@ const result: PlaywrightRunResult = {
 };
 ```
 
-## Design stance
+## Example validation error result object
 
-These contracts are intentionally narrow.
+```ts
+const result: PlaywrightRunResult = {
+  ok: false,
+  status: "validation_error",
+  target: {
+    project: "smoke",
+    spec: null,
+    grep: null,
+    headed: false,
+    workers: null,
+  },
+  command: null,
+  exitCode: null,
+  artifacts: {
+    htmlReport: null,
+    testResultsJson: null,
+    testResultsXml: null,
+    traceFiles: [],
+  },
+  summary: {
+    message: "Wrapper rejected the request during validation.",
+    nextReviewPoint: "Inspect the validation error and correct the request shape.",
+  },
+  error: {
+    code: "INVALID_SPEC",
+    detail: "Spec path must remain inside tests/ and be repo-relative.",
+  },
+};
+```
 
-They are meant to formalize the first release of the wrapper pattern, not to anticipate every future execution option or reporting need.
+## Example execution error result object
 
-The stronger design choice in v1 is to keep the contract small, stable, and easy to reason about.
+```ts
+const result: PlaywrightRunResult = {
+  ok: false,
+  status: "execution_error",
+  target: {
+    project: "smoke",
+    spec: "tests/smoke/example.spec.ts",
+    grep: null,
+    headed: false,
+    workers: 1,
+  },
+  command: "npx playwright test --project smoke tests/smoke/example.spec.ts --workers 1",
+  exitCode: 1,
+  artifacts: {
+    htmlReport: "artifacts/playwright-report/index.html",
+    testResultsJson: "artifacts/test-results.json",
+    testResultsXml: "artifacts/test-results.xml",
+    traceFiles: [],
+  },
+  summary: {
+    message: "Playwright execution did not complete normally.",
+    nextReviewPoint: "Inspect execution context and available artifacts.",
+  },
+  error: {
+    code: "PROCESS_LAUNCH_FAILED",
+    detail: "The Playwright process could not be launched successfully.",
+  },
+};
+```
+
+## Change posture
+
+This contract should evolve deliberately.
+
+A contract change is justified when it improves one of these:
+
+- execution safety
+- review clarity
+- implementation consistency
+- downstream usability
+
+A contract change is not justified simply because Playwright exposes more options.
+
+The wrapper exists to preserve a bounded interface, not to mirror the full Playwright surface area.
