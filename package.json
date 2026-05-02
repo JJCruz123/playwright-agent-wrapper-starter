@@ -8,7 +8,7 @@
     "test:headed": "playwright test --headed",
     "test:smoke": "playwright test --project=smoke",
     "show-report": "playwright show-report artifacts/playwright-report",
-    "agent:run": "tsx tools/agent/runPlaywrightTargetCli.ts",
+    "agent:run": "tsx tools/agent/execution/runPlaywrightTargetCli.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

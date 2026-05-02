@@ -6,15 +6,15 @@ import {
   type NormalizedPlaywrightTarget,
   type PlaywrightTargetRequest,
   validateAndNormalizeTarget,
-} from "./validateInputs";
-import { collectPlaywrightArtifacts } from "./playwrightArtifacts";
+} from "../contract/validateInputs";
+import { collectPlaywrightArtifacts } from "../observation/playwrightArtifacts";
 import {
   createExecutionErrorResult,
   createFailedResult,
   createPassedResult,
   createValidationErrorResult,
   type PlaywrightRunResult,
-} from "./resultSchema";
+} from "../contract/resultSchema";
 
 function buildPlaywrightCliArgs(target: NormalizedPlaywrightTarget): string[] {
   const args = ["test", `--project=${target.project}`];

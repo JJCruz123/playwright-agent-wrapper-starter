@@ -1,5 +1,5 @@
 import { runPlaywrightTarget } from "./runPlaywrightTarget";
-import type { PlaywrightTargetRequest } from "./validateInputs";
+import type { PlaywrightTargetRequest } from "../contract/validateInputs";
 
 function requireValue(flag: string, value: string | undefined): string {
   if (value === undefined || value.startsWith("--")) {

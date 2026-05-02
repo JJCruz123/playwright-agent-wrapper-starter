@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import {
   InputValidationError,
   validateAndNormalizeTarget,
-} from "../../tools/agent/validateInputs";
+} from "../../tools/agent/contract/validateInputs";
 
 test.describe("validateAndNormalizeTarget", () => {
   test("accepts a minimal valid request", async () => {

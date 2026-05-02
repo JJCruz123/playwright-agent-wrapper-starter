@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { PlaywrightArtifacts } from "./resultSchema";
+import type { PlaywrightArtifacts } from "../contract/resultSchema";
 
 const HTML_REPORT_PATH = "artifacts/playwright-report/index.html";
 const TEST_RESULTS_JSON_PATH = "artifacts/test-results.json";
