@@ -1,0 +1,6 @@
+<testsuites id="" name="" tests="1" failures="0" skipped="0" errors="0" time="0.706763">
+<testsuite name="smoke\example.spec.ts" timestamp="2026-05-02T15:23:01.512Z" hostname="smoke" tests="1" failures="0" skipped="0" time="0.006" errors="0">
+<testcase name="smoke example › should support grep-friendly naming @smoke" classname="smoke\example.spec.ts" time="0.006">
+</testcase>
+</testsuite>
+</testsuites>
