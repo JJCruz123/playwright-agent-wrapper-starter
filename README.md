@@ -118,8 +118,8 @@ playwright-agent-wrapper-starter/
 ├─ package.json
 ├─ playwright.config.ts
 ├─ tests/
-│  ├─ smoke/
-│  │  └─ example.spec.ts
+│  └─ smoke/
+│     └─ example.spec.ts
 ├─ tools/
 │  └─ agent/
 │     ├─ runPlaywrightTarget.ts
@@ -138,3 +138,58 @@ playwright-agent-wrapper-starter/
 └─ examples/
    ├─ generic/
    └─ cursor/
+```
+
+## Folder structure notes
+
+This structure is intentionally minimal.
+
+- `tests/` holds a very small sample Playwright suite used to demonstrate wrapper behavior.
+- `tools/agent/` holds the bounded execution layer, input validation, artifact collection, and normalized result shaping.
+- `artifacts/` is where captured outputs can live during local runs.
+- `docs/` explains the execution model and review model in plain language.
+- `examples/` is optional supporting material, not the core of the repo.
+
+The wrapper layer is the center of the repo.
+
+The examples are secondary, and editor-specific material should stay clearly separate from the core implementation.
+
+## Wrapper contract preview
+
+The wrapper is expected to accept a small validated input and return a normalized result.
+
+Example input:
+
+```json
+{
+  "project": "smoke",
+  "spec": "tests/smoke/example.spec.ts",
+  "headed": false,
+  "workers": 1
+}
+```
+
+Example result shape:
+
+```json
+{
+  "ok": true,
+  "status": "passed",
+  "command": "npx playwright test --project smoke tests/smoke/example.spec.ts --workers 1",
+  "exitCode": 0,
+  "artifacts": {
+    "htmlReport": "artifacts/playwright-report/index.html",
+    "testResultsJson": "artifacts/test-results.json",
+    "testResultsXml": "artifacts/test-results.xml",
+    "traceFiles": []
+  }
+}
+```
+
+The contract stays intentionally narrow.
+
+It does not expose arbitrary shell execution. It exposes a governed Playwright run shape that another system or a human can inspect and trust.
+
+## Status
+
+Early design-stage starter repo. Initial scope is intentionally narrow.
