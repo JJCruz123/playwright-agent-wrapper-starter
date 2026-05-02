@@ -33,6 +33,7 @@ Instead of exposing arbitrary terminal access, it introduces a small wrapper lay
 - capture artifact references for later inspection
 - support evidence-oriented, human-review-friendly workflows
 - preserve a clean separation between reasoning and execution
+- define formal request and result contracts for implementation and review
 
 The goal is to demonstrate a reusable QA/tooling pattern, not to build a full agent platform.
 
@@ -143,6 +144,7 @@ playwright-agent-wrapper-starter/
 │  └─ .gitkeep
 ├─ docs/
 │  ├─ architecture.md
+│  ├─ contracts.md
 │  ├─ wrapper-contract.md
 │  ├─ result-schema.md
 │  ├─ artifact-model.md
@@ -159,7 +161,7 @@ This structure is intentionally minimal.
 - `tests/` holds a very small Playwright suite used to demonstrate wrapper behavior.
 - `tools/agent/` holds the bounded execution layer, validation, artifact collection, and result shaping.
 - `artifacts/` is the local evidence/output area for runs.
-- `docs/` explains the contract and review model in plain language.
+- `docs/` explains the contract and review model in plain language and formal TypeScript shapes.
 - `examples/` is secondary material, not the center of the repo.
 
 The wrapper layer is the main subject of the project.
@@ -205,6 +207,10 @@ Example result:
 }
 ```
 
+The public contract is defined in both prose and formal TypeScript form.
+
+The prose docs explain the architectural boundary and review model. The contracts doc defines the request, result, artifact, and status shapes more explicitly so the wrapper can be implemented and tested against a stable interface.
+
 ## Design principles
 
 This repo is being shaped around a few explicit principles:
@@ -235,4 +241,4 @@ These may be explored later, but they are not necessary to prove the core patter
 
 This project is currently in the design and public-structure phase.
 
-The first milestone is to define a clean wrapper contract, result schema, artifact model, and review model before implementation expands.
+The first milestone is to define a clean wrapper contract, result schema, artifact model, formal contract shapes, and review model before implementation expands.
