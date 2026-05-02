@@ -186,9 +186,22 @@ Example result shape:
 }
 ```
 
-The contract stays intentionally narrow.
+## Result design preview
 
-It does not expose arbitrary shell execution. It exposes a governed Playwright run shape that another system or a human can inspect and trust.
+The result schema is meant to be simple enough for a human to read and structured enough for another system to consume.
+
+The first version is expected to answer a few basic questions clearly:
+
+- did the wrapper run successfully
+- what Playwright target was executed
+- what command was constructed
+- what status should a reviewer care about
+- what artifacts were produced
+- where should a human look next
+
+The goal is not to model every Playwright detail.
+
+The goal is to provide a compact, review-friendly execution record.
 
 ## Status
 
