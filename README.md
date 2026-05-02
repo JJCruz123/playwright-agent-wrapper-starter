@@ -58,7 +58,7 @@ The first version is planned as a small Playwright sample project plus a `tools/
 
 ## Design stance
 
-The goal is practical QA/tooling value, not hype.
+The goal is practical QA/tooling value.
 
 The wrapper should separate execution from reasoning, keep runs reviewable, and avoid giving agents arbitrary command access.
 
@@ -94,7 +94,7 @@ a governed wrapper layer that sits between an AI system and raw Playwright execu
 
 ## Explicitly out of scope for v1
 
-To keep the starter credible and teachable, the first release will not include:
+The first release will not include:
 
 - browser-driving agent workflows
 - a custom MCP server
